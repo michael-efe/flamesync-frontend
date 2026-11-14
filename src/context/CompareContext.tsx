@@ -14,10 +14,11 @@ export function CompareProvider({ children }: { children: ReactNode }) {
 
   const toggleInvestigation = (investigation: Investigation) => {
     setSelectedInvestigations((prev) => {
-      const isSelected = prev.some((inv) => inv.investigation_id === investigation.investigation_id);
+      // Changed investigation_id to id to match the Investigation type
+      const isSelected = prev.some((inv) => inv.id === investigation.id);
       if (isSelected) {
         // Remove if already selected
-        return prev.filter((inv) => inv.investigation_id !== investigation.investigation_id);
+        return prev.filter((inv) => inv.id !== investigation.id);
       } else {
         // Add if not selected (limit to 4 for UI purposes)
         if (prev.length >= 4) return prev;
