@@ -1,5 +1,5 @@
 import type { Investigation } from '../types/index';
-import { useCompare } from '../context/CompareContext';
+import { useCompare } from '../context/useCompare';
 import { useNavigate } from 'react-router-dom';
 
 export default function Compare() {
