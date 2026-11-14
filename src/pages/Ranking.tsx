@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { useCompare } from '../context/CompareContext';
+import { useCompare } from '../context/useCompare';
 import type { RankingPayload, RankedItem, RankingResponse } from '../types/index';
 
 export default function Ranking() {
