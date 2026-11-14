@@ -1,26 +1,17 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Investigation } from '../types/index';
-
-interface CompareContextType {
-  selectedInvestigations: Investigation[];
-  toggleInvestigation: (investigation: Investigation) => void;
-  clearSelection: () => void;
-}
-
-const CompareContext = createContext<CompareContextType | undefined>(undefined);
+import { useState, type ReactNode } from 'react';
+import { CompareContext } from './compareContextValue';
+import { MAX_COMPARISON_ITEMS, type Investigation } from '../types/index';
 
 export function CompareProvider({ children }: { children: ReactNode }) {
   const [selectedInvestigations, setSelectedInvestigations] = useState<Investigation[]>([]);
 
   const toggleInvestigation = (investigation: Investigation) => {
     setSelectedInvestigations((prev) => {
-      const isSelected = prev.some((inv) => inv.investigation_id === investigation.investigation_id);
+      const isSelected = prev.some((inv) => inv.id === investigation.id);
       if (isSelected) {
-        // Remove if already selected
-        return prev.filter((inv) => inv.investigation_id !== investigation.investigation_id);
+        return prev.filter((inv) => inv.id !== investigation.id);
       } else {
-        // Add if not selected (limit to 4 for UI purposes)
-        if (prev.length >= 4) return prev;
+        if (prev.length >= MAX_COMPARISON_ITEMS) return prev;
         return [...prev, investigation];
       }
     });
@@ -35,12 +26,4 @@ export function CompareProvider({ children }: { children: ReactNode }) {
       {children}
     </CompareContext.Provider>
   );
-}
-
-export function useCompare() {
-  const context = useContext(CompareContext);
-  if (context === undefined) {
-    throw new Error('useCompare must be used within a CompareProvider');
-  }
-  return context;
 }
