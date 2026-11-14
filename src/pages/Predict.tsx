@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { api } from '../services/api';
+import { 
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell 
+} from 'recharts';
 import type { PredictionPayload, PredictionResponse } from '../types/index';
+
+// Extended interface to handle the new SHAP data from the backend
+interface ExtendedPredictionResponse extends PredictionResponse {
+  feature_importance?: Record<string, number>;
+}
 
 export default function Predict() {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<PredictionResponse | null>(null);
+  const [result, setResult] = useState<ExtendedPredictionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Form State
@@ -31,17 +39,28 @@ export default function Predict() {
     } catch (err) {
       console.error("Prediction failed:", err);
       setError("Failed to connect to ML prediction service.");
-      // Demo fallback if backend is down
+      // Demo fallback including the new SHAP feature_importance dictionary
       setResult({
         predicted_spread_rate_mm_s: 0.036,
         lower_bound_95: 0.029,
         upper_bound_95: 0.044,
-        physics_consistency: { is_valid: true, violations: [] }
+        physics_consistency: { is_valid: true, violations: [] },
+        feature_importance: {
+          "Oxygen (%)": 0.015,
+          "Flow Vel.": 0.008,
+          "Thickness": -0.012,
+          "Width": -0.004
+        }
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Convert the backend dictionary { "Oxygen": 0.015 } into an array for Recharts
+  const chartData = result?.feature_importance 
+    ? Object.entries(result.feature_importance).map(([name, value]) => ({ name, value }))
+    : [];
 
   return (
     <div className="flex flex-col h-full max-w-7xl mx-auto font-mono selection:bg-[#FF5500] selection:text-white gap-6 overflow-hidden">
@@ -154,9 +173,9 @@ export default function Predict() {
           </div>
         </div>
 
-        {/* Column 3: Charts (Static for UI) */}
+        {/* Column 3: Charts */}
         <div className="flex flex-col gap-4">
-          <div className="border border-[#1a1a1a] bg-[#050505] rounded-xl flex flex-col h-1/2 min-h-[200px]">
+          <div className="border border-[#1a1a1a] bg-[#050505] rounded-xl flex flex-col h-1/2 min-h-50">
             <div className="p-4 border-b border-[#1a1a1a] flex items-center justify-between">
               <h2 className="text-[10px] font-bold text-white tracking-[0.15em] uppercase">Distribution</h2>
             </div>
@@ -164,12 +183,45 @@ export default function Predict() {
                [CHART COMPONENT]
             </div>
           </div>
-          <div className="border border-[#1a1a1a] bg-[#050505] rounded-xl flex flex-col h-1/2 min-h-[200px]">
+          
+          <div className="border border-[#1a1a1a] bg-[#050505] rounded-xl flex flex-col h-1/2 min-h-50 overflow-hidden">
              <div className="p-4 border-b border-[#1a1a1a]">
-              <h2 className="text-[10px] font-bold text-white tracking-[0.15em] uppercase">Feature Importance</h2>
+              <h2 className="text-[10px] font-bold text-white tracking-[0.15em] uppercase">Feature Importance (SHAP)</h2>
             </div>
-            <div className="flex-1 flex items-center justify-center text-xs text-gray-600 font-bold tracking-widest uppercase">
-               [BAR COMPONENT]
+            <div className="flex-1 p-4">
+              {chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+                    <XAxis type="number" hide domain={['dataMin - 0.005', 'dataMax + 0.005']} />
+                    <YAxis 
+                      dataKey="name" 
+                      type="category" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#9ca3af', fontSize: 10, fontFamily: 'monospace' }} 
+                      width={80}
+                    />
+                    <Tooltip 
+                      cursor={{ fill: '#1a1a1a' }}
+                      contentStyle={{ backgroundColor: '#000', border: '1px solid #1a1a1a', fontSize: '10px' }}
+                      itemStyle={{ color: '#fff' }}
+                      formatter={(value: any) => [Number(value).toFixed(4), 'SHAP Value']}
+                    />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={12}>
+                      {chartData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.value > 0 ? '#ef4444' : '#3b82f6'} // Red for acceleration, Blue for suppression
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-xs text-gray-600 font-bold tracking-widest uppercase">
+                  Awaiting Prediction...
+                </div>
+              )}
             </div>
           </div>
         </div>
