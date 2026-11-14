@@ -9,6 +9,8 @@ export interface Investigation {
   hardware?: string;
 }
 
+export const MAX_COMPARISON_ITEMS = 4;
+
 export interface PredictionPayload {
   fuel_type: string;
   oxygen_concentration_pct: number;
