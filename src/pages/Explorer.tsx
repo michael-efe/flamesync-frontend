@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { useCompare } from '../context/CompareContext';
+import { useCompare } from '../context/useCompare';
 import { MAX_COMPARISON_ITEMS, type Investigation } from '../types/index';
 
 export default function Explorer() {
