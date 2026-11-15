@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import heroBg from '../assets/images/2.webp';
+import spaceAppsLogo from '../assets/images/Space Apps Logo Color and White motif.svg';
 
 interface HeroProps {
   onLaunchScreener: () => void;
@@ -18,6 +19,20 @@ const Hero: React.FC<HeroProps> = ({ onLaunchScreener }) => {
                 backgroundBlendMode: 'overlay'
             }}
         >
+            {/* NASA Space Apps Logo - Responsively scaled to stay in the corner */}
+            <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-50 pointer-events-none"
+            >
+                <img 
+                    src={spaceAppsLogo} 
+                    alt="NASA Space Apps Challenge Logo" 
+                    className="w-[80px] sm:w-[120px] md:w-[160px] lg:w-[200px] h-auto opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                />
+            </motion.div>
+
             {/* Main Container Animation */}
             <motion.div 
                 initial={{ opacity: 0, y: 30 }}
